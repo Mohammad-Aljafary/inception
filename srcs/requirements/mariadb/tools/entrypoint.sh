@@ -54,4 +54,4 @@ EOF
 echo "Database and user created."
 
 # Keep MariaDB running in foreground (without wait)
-mysqld_safe --user=mysql --datadir=/var/lib/mysql
+exec $@

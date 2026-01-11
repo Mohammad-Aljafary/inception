@@ -31,3 +31,4 @@ RUN chmod +x /entrypoint.sh
 EXPOSE 9000
 
 ENTRYPOINT ["/entrypoint.sh"]
+CMD ["php-fpm8.2", "-F"]

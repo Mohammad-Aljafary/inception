@@ -11,3 +11,4 @@ COPY ./tools/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT [ "/entrypoint.sh" ]
+CMD ["mysqld_safe", "--user=mysql", "--datadir=/var/lib/mysql"]

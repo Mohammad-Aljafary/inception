@@ -79,4 +79,4 @@ fi
 
 # Start PHP-FPM in foreground
 echo "Starting PHP-FPM..."
-php-fpm8.2 -F
+exec $@
