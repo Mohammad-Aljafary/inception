@@ -1,8 +1,19 @@
-FROM debian:stable
+FROM debian:12
 
-RUN apt-get update  && apt-get install -y nginx openssl \
+RUN apt-get update && apt-get install -y \
+    nginx \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY ./conf/default.conf /etc/nginx/default.conf
+# Create SSL directory and self-signed certificate
+RUN mkdir -p /etc/nginx/ssl && \
+    openssl req -x509 -nodes -days 365 \
+    -newkey rsa:2048 \
+    -keyout /etc/nginx/ssl/nginx-selfsigned.key \
+    -out /etc/nginx/ssl/nginx-selfsigned.crt \
+    -subj "/C=FR/ST=IDF/L=Paris/O=42/CN=malja-fa.42.fr"
 
-CMD [ "nginx", "-g", "daemon off;" ]
+# Copy nginx configuration
+COPY conf/default.conf /etc/nginx/conf.d/default.conf
+
+CMD ["nginx", "-g", "daemon off;"]

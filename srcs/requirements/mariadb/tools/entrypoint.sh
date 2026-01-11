@@ -1,0 +1,57 @@
+#!/bin/bash
+set -e
+
+echo "Starting MariaDB..."
+
+# Create required directories
+mkdir -p /run/mysqld
+chown mysql:mysql /run/mysqld
+
+# Check required variables
+if [ -z "$NAME_DATABASE" ] || [ -z "$USERNAME_DATABASE" ] || [ -z "$PASSWORD_DATABASE" ]; then
+    echo "ERROR: Missing environment variables!"
+    echo "NAME_DATABASE=$NAME_DATABASE"
+    echo "USERNAME_DATABASE=$USERNAME_DATABASE"
+    echo "PASSWORD_DATABASE is set: $([ -n "$PASSWORD_DATABASE" ] && echo yes || echo no)"
+    exit 1
+fi
+
+
+# Initialize database if not exists
+if [ ! -d "/var/lib/mysql/mysql" ]; then
+    echo "Initializing MariaDB data directory..."
+    mysql_install_db --user=mysql --datadir=/var/lib/mysql
+fi
+
+# Start MariaDB in background FIRST
+mysqld --user=mysql --datadir=/var/lib/mysql &
+
+# Wait for MariaDB to be ready
+echo "Waiting for MariaDB to start..."
+for i in {1..30}; do
+    if mysqladmin ping --silent 2>/dev/null; then
+        break
+    fi
+    echo "Waiting... ($i/30)"
+    sleep 1
+done
+
+if ! mysqladmin ping --silent 2>/dev/null; then
+    echo "MariaDB failed to start!"
+    exit 1
+fi
+
+echo "MariaDB is running."
+
+# Create database and user
+mysql <<EOF
+CREATE DATABASE IF NOT EXISTS ${NAME_DATABASE};
+CREATE USER IF NOT EXISTS '${USERNAME_DATABASE}'@'%' IDENTIFIED BY '${PASSWORD_DATABASE}';
+GRANT ALL PRIVILEGES ON ${NAME_DATABASE}.* TO '${USERNAME_DATABASE}'@'%';
+FLUSH PRIVILEGES;
+EOF
+
+echo "Database and user created."
+
+# Keep MariaDB running in foreground (without wait)
+mysqld_safe --user=mysql --datadir=/var/lib/mysql
