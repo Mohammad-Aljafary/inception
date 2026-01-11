@@ -19,10 +19,9 @@ if [ ! -f /var/www/html/wp-settings.php ]; then
     curl -O https://wordpress.org/latest.tar.gz
     tar -xzf latest.tar.gz --strip-components=1
     rm latest.tar.gz
-    chown -R www-data:www-data /var/www/html
 fi
 
-# Create wp-config.php with actual values (not env vars)
+# Create wp-config.php with actual values
 cat > /var/www/html/wp-config.php <<EOF
 <?php
 define( 'DB_NAME', '${NAME_DATABASE}' );
@@ -43,7 +42,9 @@ define( 'NONCE_SALT',       'unique-phrase-8' );
 
 \$table_prefix = 'wp_';
 
-define( 'WP_DEBUG', false );
+define( 'WP_DEBUG', true );
+define( 'WP_HOME', 'https://malja-fa.42.fr' );
+define( 'WP_SITEURL', 'https://malja-fa.42.fr' );
 
 if ( ! defined( 'ABSPATH' ) ) {
     define( 'ABSPATH', __DIR__ . '/' );
@@ -52,7 +53,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once ABSPATH . 'wp-settings.php';
 EOF
 
-chown www-data:www-data /var/www/html/wp-config.php
+chown -R www-data:www-data /var/www/html
 
 # Install WP-CLI
 if [ ! -f /usr/local/bin/wp ]; then
@@ -63,11 +64,12 @@ if [ ! -f /usr/local/bin/wp ]; then
 fi
 
 # Install WordPress if not already installed
-if ! wp core is-installed --allow-root 2>/dev/null; then
+if ! wp core is-installed --path=/var/www/html --allow-root 2>/dev/null; then
     echo "Installing WordPress..."
     wp core install \
-        --url="$WP_URL" \
-        --title="$WP_TITLE" \
+        --path=/var/www/html \
+        --url="https://malja-fa.42.fr" \
+        --title="My Site" \
         --admin_user="$WP_ADMIN_USER" \
         --admin_password="$WP_ADMIN_PASSWORD" \
         --admin_email="$WP_ADMIN_EMAIL" \
@@ -75,9 +77,6 @@ if ! wp core is-installed --allow-root 2>/dev/null; then
     echo "WordPress installed!"
 fi
 
-# Set correct ownership
-chown -R www-data:www-data /var/www/html
-
 # Start PHP-FPM in foreground
 echo "Starting PHP-FPM..."
-php-fpm$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;') -F
+php-fpm8.2 -F
