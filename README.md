@@ -1,19 +1,21 @@
-This project has been created as part of the 42 curriculum by malja-fa
+*This project has been created as part of the 42 curriculum by malja-fa.*
 
 # Inception
 ## Description
 
-Inception is a system adminstration Focuses on service containerization using Docker container.
+Inception is a system administration project focused on service containerization using Docker.
 
-The goal of the project is to containerize the services listed below using Docker container
--**NGINX** - a powerful open source software that acts as high- preformance web-server
--**Wordpress** - a free, open-source Content Management System (CMS) used to build and manage websites without extensive coding
--**Mariadb** - open-source relational database management system (RDBMS) created by the original developers of MySQL as a community-driven fork
+The goal is to containerize the following services:
 
-ALL services run on Debian:12 Docker base image and communicate through the Docker network
+- **NGINX** — A high-performance web server and reverse proxy
+- **WordPress** — A free, open-source Content Management System (CMS) for building websites
+- **MariaDB** — An open-source relational database management system (RDBMS), a community-driven fork of MySQL
+
+All services run on **Debian 12** Docker base images and communicate through a dedicated Docker network.
 
 ## Project Description
-## Docker Architecture
+
+### Docker Architecture
 
 This project uses Docker to containerize each service independently, ensuring isolation, portability, and reproducibility. Each container has its own Dockerfile with custom configurations:
 
@@ -46,7 +48,6 @@ This project uses Docker to containerize each service independently, ensuring is
 
 **Choice:** Docker was chosen for its lightweight nature and fast deployment, ideal for running multiple services on a single host.
 
-
 #### Secrets vs Environment Variables
 
 | Aspect | Secrets | Environment Variables |
@@ -68,7 +69,6 @@ This project uses Docker to containerize each service independently, ensuring is
 
 **Choice:** A custom bridge network (`inception_network`) provides service isolation while allowing inter-container communication.
 
-
 #### Docker Volumes vs Bind Mounts
 
 | Aspect | Docker Volumes | Bind Mounts |
@@ -80,7 +80,7 @@ This project uses Docker to containerize each service independently, ensuring is
 
 **Choice:** Bind mounts are used (`/home/malja-fa/data/`) for persistent data storage, allowing direct access to WordPress and MariaDB data.
 
-
+---
 
 ## Instructions
 
@@ -161,7 +161,6 @@ Open `https://malja-fa.42.fr` in your browser (accept the self-signed certificat
 - [Docker for Beginners](https://docker-curriculum.com/)
 - [Docker Networking Guide](https://docs.docker.com/network/)
 - [SSL/TLS with NGINX](https://nginx.org/en/docs/http/configuring_https_servers.html)
-
 
 ### AI Usage
 
