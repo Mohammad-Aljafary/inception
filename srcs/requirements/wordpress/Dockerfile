@@ -1,7 +1,6 @@
 FROM debian:12
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-    apache2 \
     php-fpm \
     php-mysql  \
     php-curl \
