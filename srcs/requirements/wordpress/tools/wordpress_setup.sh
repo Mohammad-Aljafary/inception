@@ -43,8 +43,8 @@ define( 'NONCE_SALT',       'unique-phrase-8' );
 \$table_prefix = 'wp_';
 
 define( 'WP_DEBUG', true );
-define( 'WP_HOME', 'https://malja-fa.42.fr' );
-define( 'WP_SITEURL', 'https://malja-fa.42.fr' );
+define( 'WP_HOME', '${WP_URL}' );
+define( 'WP_SITEURL', '${WP_URL}' );
 
 if ( ! defined( 'ABSPATH' ) ) {
     define( 'ABSPATH', __DIR__ . '/' );
@@ -75,6 +75,14 @@ if ! wp core is-installed --path=/var/www/html --allow-root 2>/dev/null; then
         --admin_email="$WP_ADMIN_EMAIL" \
         --allow-root
     echo "WordPress installed!"
+
+    echo "Creating a user..."
+    wp user create "$WP_USER" "$WP_USER_EMAIL" \
+    --user_pass="$WP_USER_PASSWORD" \
+    --role=author --allow-root \
+    --path=/var/www/html
+
+    echo "User created!"
 fi
 
 # Start PHP-FPM in foreground

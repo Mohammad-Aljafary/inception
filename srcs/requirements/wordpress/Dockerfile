@@ -22,8 +22,6 @@ RUN mkdir -p /var/www/html
 # Configure PHP-FPM to listen on port 9000
 RUN sed -i 's|listen = /run/php/php.*-fpm.sock|listen = 9000|' /etc/php/*/fpm/pool.d/www.conf
 
-# Copy wp-config to temp location (will be moved by entrypoint)
-COPY conf/wp-config.php /tmp/wp-config.php
 
 COPY tools/wordpress_setup.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
