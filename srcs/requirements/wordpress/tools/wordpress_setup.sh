@@ -20,7 +20,6 @@ if [ ! -f /var/www/html/wp-settings.php ]; then
     tar -xzf latest.tar.gz --strip-components=1
     rm latest.tar.gz
 fi
-# ...existing code...
 
 # Create wp-config.php with actual values
 cat > /var/www/html/wp-config.php <<EOF
@@ -68,9 +67,6 @@ if [ ! -f /usr/local/bin/wp ]; then
 fi
 
 # Install WordPress if not already installed
-# ...existing code...
-
-# Install WordPress if not already installed
 if ! wp core is-installed --path=/var/www/html --allow-root 2>/dev/null; then
     echo "Installing WordPress..."
     wp core install \
@@ -83,7 +79,6 @@ if ! wp core is-installed --path=/var/www/html --allow-root 2>/dev/null; then
         --allow-root
     echo "WordPress installed!"
 fi
-# ...existing code...
 
 # Create user if not exists (runs every time)
 if ! wp user get "$WP_USER" --allow-root --path=/var/www/html &>/dev/null; then
@@ -107,10 +102,10 @@ function force_login() {
 }
 add_action('template_redirect', 'force_login');
 EOFPHP
+
 chown www-data:www-data /var/www/html/wp-content/mu-plugins/force-login.php
 
-# Start PHP-FPM in foreground
-# ...existing code...
+
 
 # Start PHP-FPM in foreground
 echo "Starting PHP-FPM..."

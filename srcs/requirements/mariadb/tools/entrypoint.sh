@@ -23,7 +23,7 @@ if [ ! -d "/var/lib/mysql/mysql" ]; then
     mysql_install_db --user=mysql --datadir=/var/lib/mysql
 fi
 
-# Start MariaDB in background FIRST
+# Start MariaDB server in the background
 mysqld --user=mysql --datadir=/var/lib/mysql &
 
 # Wait for MariaDB to be ready
@@ -53,5 +53,4 @@ EOF
 
 echo "Database and user created."
 
-# Keep MariaDB running in foreground (without wait)
 exec $@
