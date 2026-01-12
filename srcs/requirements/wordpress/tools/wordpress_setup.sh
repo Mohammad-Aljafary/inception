@@ -20,6 +20,7 @@ if [ ! -f /var/www/html/wp-settings.php ]; then
     tar -xzf latest.tar.gz --strip-components=1
     rm latest.tar.gz
 fi
+# ...existing code...
 
 # Create wp-config.php with actual values
 cat > /var/www/html/wp-config.php <<EOF
@@ -46,6 +47,9 @@ define( 'WP_DEBUG', true );
 define( 'WP_HOME', '${WP_URL}' );
 define( 'WP_SITEURL', '${WP_URL}' );
 
+/* Force login for all pages */
+define( 'FORCE_LOGIN', true );
+
 if ( ! defined( 'ABSPATH' ) ) {
     define( 'ABSPATH', __DIR__ . '/' );
 }
@@ -64,6 +68,9 @@ if [ ! -f /usr/local/bin/wp ]; then
 fi
 
 # Install WordPress if not already installed
+# ...existing code...
+
+# Install WordPress if not already installed
 if ! wp core is-installed --path=/var/www/html --allow-root 2>/dev/null; then
     echo "Installing WordPress..."
     wp core install \
@@ -75,15 +82,35 @@ if ! wp core is-installed --path=/var/www/html --allow-root 2>/dev/null; then
         --admin_email="$WP_ADMIN_EMAIL" \
         --allow-root
     echo "WordPress installed!"
+fi
+# ...existing code...
 
+# Create user if not exists (runs every time)
+if ! wp user get "$WP_USER" --allow-root --path=/var/www/html &>/dev/null; then
     echo "Creating a user..."
     wp user create "$WP_USER" "$WP_USER_EMAIL" \
-    --user_pass="$WP_USER_PASSWORD" \
-    --role=author --allow-root \
-    --path=/var/www/html
-
+        --user_pass="$WP_USER_PASSWORD" \
+        --role=author --allow-root \
+        --path=/var/www/html
     echo "User created!"
+else
+    echo "User $WP_USER already exists."
 fi
+
+mkdir -p /var/www/html/wp-content/mu-plugins
+cat > /var/www/html/wp-content/mu-plugins/force-login.php <<'EOFPHP'
+<?php
+function force_login() {
+    if (!is_user_logged_in() && !strpos($_SERVER['REQUEST_URI'], 'wp-login.php')) {
+        auth_redirect();
+    }
+}
+add_action('template_redirect', 'force_login');
+EOFPHP
+chown www-data:www-data /var/www/html/wp-content/mu-plugins/force-login.php
+
+# Start PHP-FPM in foreground
+# ...existing code...
 
 # Start PHP-FPM in foreground
 echo "Starting PHP-FPM..."
