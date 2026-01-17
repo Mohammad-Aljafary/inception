@@ -25,6 +25,7 @@ fi
 
 # Start MariaDB server in the background
 mysqld --user=mysql --datadir=/var/lib/mysql &
+pid=$!
 
 # Wait for MariaDB to be ready
 echo "Waiting for MariaDB to start..."
@@ -50,6 +51,8 @@ CREATE USER IF NOT EXISTS '${USERNAME_DATABASE}'@'%' IDENTIFIED BY '${PASSWORD_D
 GRANT ALL PRIVILEGES ON ${NAME_DATABASE}.* TO '${USERNAME_DATABASE}'@'%';
 FLUSH PRIVILEGES;
 EOF
+
+kill $pid
 
 echo "Database and user created."
 

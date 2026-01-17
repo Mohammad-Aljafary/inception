@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+systemctl disable apache2
+systemctl disable httpd
+
 echo "Starting WordPress setup..."
 
 # Wait for MariaDB to be ready
