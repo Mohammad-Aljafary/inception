@@ -58,6 +58,28 @@ else
     echo "User $WP_USER already exists."
 fi
 
+# Create Force Login mu-plugin manually
+echo "Setting up Force Login..."
+mkdir -p /var/www/html/wp-content/mu-plugins
+cat > /var/www/html/wp-content/mu-plugins/force-login.php <<'EOFPHP'
+<?php
+/**
+ * Plugin Name: Force Login
+ * Description: Require users to log in to view the site
+ */
+function force_login_redirect() {
+    if (!is_user_logged_in() && !wp_doing_ajax() && !defined('WP_CLI')) {
+        $current_url = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        $login_url = wp_login_url($current_url);
+        if (strpos($_SERVER['REQUEST_URI'], 'wp-login.php') === false && strpos($_SERVER['REQUEST_URI'], 'wp-cron.php') === false) {
+            wp_redirect($login_url);
+            exit;
+        }
+    }
+}
+add_action('template_redirect', 'force_login_redirect');
+EOFPHP
+
 chown -R www-data:www-data /var/www/html
 
 # Start PHP-FPM in foreground
