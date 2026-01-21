@@ -15,4 +15,8 @@ re:
 ps:
 	$(COMPOSE) ps
 
-.PHONY: up down logs ps re
+fclean:
+	$(COMPOSE) down -v
+	docker system prune -af
+
+.PHONY: up down logs ps re fclean

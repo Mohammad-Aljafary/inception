@@ -17,13 +17,14 @@ if [ -z "$NAME_DATABASE" ] || [ -z "$USERNAME_DATABASE" ] || [ -z "$PASSWORD_DAT
     exit 1
 fi
 
+touch /var/lib/mysql/mysql/ll
 
-# Initialize database if not exists
-if [ ! -d "/var/lib/mysql/mysql" ]; then
+if [ -z "$(ls -A /var/lib/mysql/mysql 2>/dev/null)" ]; then
     echo "Initializing MariaDB data directory..."
     mysql_install_db --user=mysql --datadir=/var/lib/mysql
 fi
 
+rm -f /var/lib/mysql/mysql/ll
 # Start MariaDB server in the background
 mysqld --user=mysql --datadir=/var/lib/mysql &
 pid=$!
@@ -45,26 +46,17 @@ fi
 
 echo "MariaDB is running."
 
-# Secure root account
+
 mysql <<EOF
 ALTER USER 'root'@'localhost' IDENTIFIED BY '${PASSWORD_ROOT_DATABASE}';
-DELETE FROM mysql.user WHERE User='';
-DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
-FLUSH PRIVILEGES;
-EOF
-
-echo "Root password set and anonymous users removed."
-
-# Create database and user
-mysql -u root -p"${PASSWORD_ROOT_DATABASE}" <<EOF
 CREATE DATABASE IF NOT EXISTS ${NAME_DATABASE};
 CREATE USER IF NOT EXISTS '${USERNAME_DATABASE}'@'%' IDENTIFIED BY '${PASSWORD_DATABASE}';
 GRANT ALL PRIVILEGES ON ${NAME_DATABASE}.* TO '${USERNAME_DATABASE}'@'%';
 FLUSH PRIVILEGES;
 EOF
 
+    echo "Database and user created."
+
 kill $pid
 
-echo "Database and user created."
-
-exec $@
+exec "$@"
