@@ -8,11 +8,12 @@ mkdir -p /run/mysqld
 chown mysql:mysql /run/mysqld
 
 # Check required variables
-if [ -z "$NAME_DATABASE" ] || [ -z "$USERNAME_DATABASE" ] || [ -z "$PASSWORD_DATABASE" ]; then
+if [ -z "$NAME_DATABASE" ] || [ -z "$USERNAME_DATABASE" ] || [ -z "$PASSWORD_DATABASE" ] || [ -z "$PASSWORD_ROOT_DATABASE" ]; then
     echo "ERROR: Missing environment variables!"
     echo "NAME_DATABASE=$NAME_DATABASE"
     echo "USERNAME_DATABASE=$USERNAME_DATABASE"
     echo "PASSWORD_DATABASE is set: $([ -n "$PASSWORD_DATABASE" ] && echo yes || echo no)"
+    echo "PASSWORD_ROOT_DATABASE is set: $([ -n "$PASSWORD_ROOT_DATABASE" ] && echo yes || echo no)"
     exit 1
 fi
 
@@ -44,8 +45,18 @@ fi
 
 echo "MariaDB is running."
 
-# Create database and user
+# Secure root account
 mysql <<EOF
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${PASSWORD_ROOT_DATABASE}';
+DELETE FROM mysql.user WHERE User='';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+FLUSH PRIVILEGES;
+EOF
+
+echo "Root password set and anonymous users removed."
+
+# Create database and user
+mysql -u root -p"${PASSWORD_ROOT_DATABASE}" <<EOF
 CREATE DATABASE IF NOT EXISTS ${NAME_DATABASE};
 CREATE USER IF NOT EXISTS '${USERNAME_DATABASE}'@'%' IDENTIFIED BY '${PASSWORD_DATABASE}';
 GRANT ALL PRIVILEGES ON ${NAME_DATABASE}.* TO '${USERNAME_DATABASE}'@'%';

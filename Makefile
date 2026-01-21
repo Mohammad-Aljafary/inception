@@ -9,7 +9,7 @@ logs:
 	$(COMPOSE) logs -f
 
 re:
-	$(COMPOSE) down
+	$(COMPOSE) down -v
 	$(COMPOSE) up -d --build
 
 ps:
