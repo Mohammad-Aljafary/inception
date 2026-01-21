@@ -17,14 +17,15 @@ if [ -z "$NAME_DATABASE" ] || [ -z "$USERNAME_DATABASE" ] || [ -z "$PASSWORD_DAT
     exit 1
 fi
 
-touch /var/lib/mysql/mysql/ll
-
-if [ -z "$(ls -A /var/lib/mysql/mysql 2>/dev/null)" ]; then
+touch /var/lib/mysql/.mysql_initialized
+# Check if database is already initialized (marker file)
+FIRST_RUN=false
+if [ ! -f "/var/lib/mysql/.mysql_initialized" ]; then
     echo "Initializing MariaDB data directory..."
     mysql_install_db --user=mysql --datadir=/var/lib/mysql
+    FIRST_RUN=true
+    touch /var/lib/mysql/.mysql_initialized
 fi
-
-rm -f /var/lib/mysql/mysql/ll
 # Start MariaDB server in the background
 mysqld --user=mysql --datadir=/var/lib/mysql &
 pid=$!
@@ -46,17 +47,24 @@ fi
 
 echo "MariaDB is running."
 
-
-mysql <<EOF
+# Only run SQL setup on first initialization
+if [ "$FIRST_RUN" = true ]; then
+    mysql <<EOF
 ALTER USER 'root'@'localhost' IDENTIFIED BY '${PASSWORD_ROOT_DATABASE}';
+FLUSH PRIVILEGES;
+EOF
+
+    echo "Root password set. Creating database and user..."
+    mysql -u root -p"${PASSWORD_ROOT_DATABASE}" <<EOF
 CREATE DATABASE IF NOT EXISTS ${NAME_DATABASE};
 CREATE USER IF NOT EXISTS '${USERNAME_DATABASE}'@'%' IDENTIFIED BY '${PASSWORD_DATABASE}';
 GRANT ALL PRIVILEGES ON ${NAME_DATABASE}.* TO '${USERNAME_DATABASE}'@'%';
 FLUSH PRIVILEGES;
 EOF
-
     echo "Database and user created."
+else
+    echo "Database already initialized, skipping setup."
+fi
 
 kill $pid
-
 exec "$@"
